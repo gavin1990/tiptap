@@ -124,6 +124,13 @@ const routes = [
       githubUrl: 'https://github.com/heyscrumpy/tiptap/tree/master/examples/Components/Routes/Export',
     },
   },
+  {
+    path: '/editor',
+    component: () => import('Components/Routes/Editor'),
+    meta: {
+      githubUrl: 'https://github.com/heyscrumpy/tiptap/tree/master/examples/Components/Routes/Editor',
+    },
+  },
 ]
 
 const router = new VueRouter({

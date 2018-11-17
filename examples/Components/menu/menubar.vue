@@ -14,6 +14,16 @@ export default {
       currentType: '',
       menuBar: [
         {
+          name: 'file',
+          type: 'file',
+          list: [
+            {
+              name: 'print',
+              icon: 'icon-print'
+            }
+          ]
+        },
+        {
           name: 'edit',
           type: 'edit',
           list: [
