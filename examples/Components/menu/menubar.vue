@@ -1,20 +1,30 @@
 <template>
   <div class="tiptap_menu_bar">
     <template v-for="(item,index) in menuBar">
-      <tip-select class="item" :name="item.name" :type="item.type" :current="currentType" @active="activeSelect" :key="index" :list="item.list" :commands="commands" :isActive="isActive"></tip-select>
+      <tip-select class="item" :name="item.name" :type="item.type" :current="currentType" @active="activeSelect" :key="index" :list="item.list" :commands="commands" :isActive="isActive" @command="itemCommand"></tip-select>
     </template>
+    <m-dialog ref="insertDialog" :title="dialogTitle" className="normal">
+      <div slot="content">
+        <template v-if="dialogType === 'image'">
+          image
+        </template>
+      </div>
+    </m-dialog>
   </div>
 </template>
 <script>
 import tipSelect from './tip.select'
+import mDialog from './dialog'
 export default {
   props: ['commands', 'isActive'],
   data () {
     return {
       currentType: '',
+      dialogTitle: 'Insert Image/Edit Image',
+      dialogType: '',
       menuBar: [
         {
-          name: 'file',
+          name: 'File',
           type: 'file',
           list: [
             {
@@ -24,7 +34,7 @@ export default {
           ]
         },
         {
-          name: 'edit',
+          name: 'Edit',
           type: 'edit',
           list: [
             {
@@ -40,19 +50,24 @@ export default {
           ]
         },
         {
-          name: 'insert',
+          name: 'Insert',
           type: 'insert',
           list: [
             {
-              name: 'insert table',
+              name: 'Table',
               command: 'table',
               commandType: 'insertTable',
               icon: 'icon-inserttable'
+            },
+            {
+              name: 'Image',
+              command: 'image',
+              icon: 'icon-image'
             }
           ]
         },
         {
-          name: 'table',
+          name: 'Table',
           type: 'table',
           list: [
             {
@@ -149,11 +164,16 @@ export default {
     }
   },
   components: {
-    tipSelect
+    tipSelect,
+    mDialog
   },
   methods: {
     activeSelect (type) {
       this.currentType = type
+    },
+    itemCommand (type) {
+      this.dialogType = type
+      this.$refs.insertDialog.open()
     }
   }
 }

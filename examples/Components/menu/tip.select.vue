@@ -59,6 +59,7 @@
 </template>
 
 <script>
+import { domClickHandle } from './utils'
 export default {
   props: ['name', 'list', 'arrow', 'type', 'current', 'commands', 'isActive'],
   data () {
@@ -78,33 +79,24 @@ export default {
     }
   },
   created () {
-    this.domClickHandle('like_sel', _ => {
+    domClickHandle('like_sel', _ => {
       this.active = false
     })
   },
   methods: {
     commandHandle (command) {
-      if (command) return command()
+      if (command) {
+        if (command === 'image') {
+          this.$emit('command', 'image')
+        } else {
+          return command()
+        }
+      }
     },
     activeClass () {
       this.active = !this.active
       if (this.active) {
         this.$emit('active', this.type)
-      }
-    },
-    domClickHandle (cname, done) {
-      try {
-        document.addEventListener('click', function (e) {
-          let classNameArr = []
-          for (let item of e.path) {
-            item.className && classNameArr.push(item.className)
-          }
-          if (!String(classNameArr).includes(cname)) {
-            if (done) done()
-          }
-        })
-      } catch (err) {
-        console.log('domClickHandle:error', err)
       }
     },
     selectTable (row, col) {
