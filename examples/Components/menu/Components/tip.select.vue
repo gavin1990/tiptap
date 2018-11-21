@@ -7,21 +7,23 @@
     <transition name="slide" mode="out-in">
       <div class="sel_option" :class="{arrow: arrow}" v-if="active">
         <ul class="ul_list">
-          <li class="col" v-for="(item,index) in list" :class="{child: item.child}" :key="index">
-            <template v-if="item.command === 'table' && item.commandType">
+          <li class="col" v-for="(item,index) in list" :class="{child: item.child, 'is-active': item.commandCode && item.commandCode !== 'table' && isActive[item.commandCode](item.attrs)}" :key="index">
+            <template v-if="item.commandCode === 'table' && item.commandType">
               <label @click="commands.table({type: item.commandType})">
                 <em class="font_midd">
                   <i v-if="item.icon" :class="'iconfont ' + item.icon"></i>
                 </em>
                 <span class="font_midd">{{item.name}}</span>
+                <i v-if="item.child" class="child_icon iconfont icon-arrow-right"></i>
               </label>
             </template>
             <template v-else>
-              <label @click="commandHandle(item.command)">
+              <label @click="commandHandle(item)">
                 <em class="font_midd">
                   <i v-if="item.icon" :class="'iconfont ' + item.icon"></i>
                 </em>
                 <span class="font_midd">{{item.name}}</span>
+                <i v-if="item.child" class="child_icon iconfont icon-arrow-right"></i>
               </label>
             </template>
             <!-- insert table -->
@@ -35,21 +37,20 @@
               </table>
               <p class="alg_c">{{tableCols}} x {{tableRows}}</p>
             </div>
-            <template v-if="item.child">
+            <template v-if="item.child && item.list && item.list.length">
               <div class="menu_item">
                 <ul class="ul_list">
                   <template v-for="(sitem,sindex) in item.list">
                     <!-- table handle -->
-                    <template v-if="sitem.command === 'table' && sitem.commandType">
-                      <li class="col" :class="{'is-active': isActive.table()}" @click="commands.table({type: sitem.commandType})">{{sitem.name}}</li>
+                    <template v-if="sitem.commandCode === 'table' && sitem.commandType">
+                      <li class="col" @click="commands.table({type: sitem.commandType})">{{sitem.name}}</li>
                     </template>
                     <template v-else>
-                      <li class="col" :class="{'is-active': item.active}">{{sitem.name}}</li>
+                      <li class="col" :class="{'is-active': sitem.commandCode && isActive[sitem.commandCode](sitem.attrs)}" @click="commandHandle(sitem)">{{sitem.name}}</li>
                     </template>
                   </template>
                 </ul>
               </div>
-              <i class="child_icon iconfont icon-arrow-right"></i>
             </template>
           </li>
         </ul>
@@ -59,19 +60,21 @@
 </template>
 
 <script>
-import { domClickHandle } from './utils'
+import { findSelectedNodeOfType } from 'prosemirror-utils'
+import { domClickHandle } from '../utils'
 export default {
-  props: ['name', 'list', 'arrow', 'type', 'current', 'commands', 'isActive'],
+  props: ['name', 'list', 'arrow', 'type', 'current', 'commands', 'isActive', 'editor'],
   data () {
     return {
       active: false,
       tableRows: 1,
-      tableCols: 1
+      tableCols: 1,
+      selectionAttrs: ''
     }
   },
   computed: {
     itemShow () {
-      if (['file', 'edit', 'insert'].includes(this.type)) {
+      if (['file', 'edit', 'insert', 'format'].includes(this.type)) {
         return true
       } else {
         return this.isActive[this.type]()
@@ -84,14 +87,22 @@ export default {
     })
   },
   methods: {
-    commandHandle (command) {
-      if (command) {
-        if (command === 'image') {
-          this.$emit('command', 'image')
+    commandHandle (item) {
+      if (item.command) return item.command()
+      if (item.commandCode) {
+        if (item.commandAfterClose) this.active = false
+        if (item.commandCode === 'image') {
+          const selectedNode = this.getSelectionAttrs(item.commandCode)
+          this.$emit('command', 'image', selectedNode)
         } else {
-          return command()
+          return this.commands[item.commandCode](item.attrs)
         }
       }
+    },
+    getSelectionAttrs (type) {
+      const { selection } = this.editor.state
+      const nodeType = this.editor.schema.nodes[type]
+      return findSelectedNodeOfType(nodeType)(selection)
     },
     activeClass () {
       this.active = !this.active
@@ -196,12 +207,16 @@ export default {
             display: block;
           }
         }
+        &.is-active{
+          background: #f5f5f5;
+        }
         &.child {
-          position: relative;
+          label{position: relative;}
           .child_icon {
             position: absolute;
             right: 0;
             top: 0px;
+            margin: 0;
             font-size: 16px;
           }
         }

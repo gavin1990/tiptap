@@ -31,6 +31,7 @@
   margin: 0 auto 5rem auto;
 
   &__content {
+    min-height: 200px;
     padding: 10px;
     pre {
       padding: 0.7rem 1rem;
@@ -88,7 +89,7 @@
       overflow: hidden;
       td, th {
         min-width: 1em;
-        border: 1px solid #ddd;
+        border: 1px solid #333;
         padding: 3px 5px;
         vertical-align: top;
         box-sizing: border-box;
@@ -126,7 +127,9 @@
       cursor: ew-resize;
       cursor: col-resize;
     }
-
+    .ProseMirror-selectednode{
+      outline: 2px solid #8cf;
+    }
   }
 }
 
@@ -186,7 +189,7 @@
 
 .menubar {
 
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   transition: visibility 0.2s 0.4s, opacity 0.2s 0.4s;
 
   &.is-hidden {

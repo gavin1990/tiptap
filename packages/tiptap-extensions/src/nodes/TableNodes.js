@@ -14,6 +14,16 @@ const Table = tableNodes({
         }
 			},
 		},
+		verticalAlign: {
+			default: null,
+			getFromDOM(dom) { return dom.style.verticalAlign || null },
+			setDOMAttr(value, attrs) {
+				if (value) {
+          const style = { style: `${(attrs.style || '')}vertical-align: ${value};` }
+          Object.assign(attrs, style)
+        }
+			},
+		},
 	},
 })
 export default Table

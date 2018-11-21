@@ -88,7 +88,6 @@ export default class ExtensionManager {
             type: schema[`${type}s`][name],
           } : {},
         })
-
         if (Array.isArray(value)) {
           commands[name] = attrs => value
             .forEach(callback => {

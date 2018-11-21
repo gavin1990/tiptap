@@ -8,7 +8,7 @@
             <div class="handler_box">
               <h2 class="dia_til" v-if="title">{{title}}</h2>
               <div class="handle_con">
-                <slot name="content" class="handle_con"></slot>
+                <slot name="content"></slot>
               </div>
             </div>
             <div class="dialog_bom ui_01" v-if="confirm">
@@ -31,7 +31,7 @@
         dialogData: null
       }
     },
-    props: ['content','closeBtn','layoutTrigger', 'className','title','confirm'],
+    props: ['content', 'closeBtn', 'layoutTrigger', 'className', 'title', 'confirm'],
     created () {
       if (this.confirm) this.dialogClass = 'confirm'
     },
@@ -41,7 +41,12 @@
         this.dialogVisible = true
       },
       close () {
-        this.dialogVisible = false
+        this.active = false
+        this.$nextTick(_ => {
+          setTimeout(_ => {
+            this.dialogVisible = false
+          }, 300)
+        })
       },
       layoutClose(e){
         let _self = this
@@ -50,12 +55,12 @@
         }
       },
       submit () {
-        this.$emit('submit',this.dialogData)
-        this.dialogVisible = false
+        this.$emit('submit', this.dialogData)
+        this.close()
       },
       cancel () {
-        this.dialogVisible = false
-        this.$emit('cancel',this.dialogData)
+        this.close()
+        this.$emit('cancel', this.dialogData)
       }
     },
     watch: {
@@ -72,31 +77,32 @@
 
 <style lang="scss" scoped>
   .m_dialog{
-    position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255, 255, 255, 0.6);z-index:900;
+    position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255, 255, 255, 0.6);z-index:9000;
     .inner{display:table;width:100%;height:100%;overflow:hidden}
     .dialog_wrap{display:table-cell;vertical-align:middle}
-    .dia_con_box{position:relative;width:60%;margin:0 auto;box-shadow: 0px 1px 9px rgba(0,0,0,.1);border: 1px solid #eee;}
+    .dia_con_box{position:relative;width:60%;margin:0 auto;box-shadow: 0px 1px 9px rgba(0,0,0,.1);border: 1px solid #eee;background: #fff;}
     .ic_close{position:absolute;top:10px;right:10px;width:20px;height:20px;line-height: 16px;text-align: center;background:#fff;cursor: pointer;
       i{font-size: 12px;color: #979797}
     }
     .handler_box{
       color: #666;
-      .dia_til{font-size:14px;padding:10px;margin:0;font-weight: normal;text-align:left;border-bottom: 1px solid #eee;}
-      background: #fff;
+      .dia_til{font-size:14px;padding:10px;margin:0;font-weight: normal;text-align:left;border-bottom: 1px solid #e4e7ed;}
     }
     .tips_txt{font-size:14px;color:#333;text-align:center}
     .dialog_bom{
-      padding-top: 20px;
-      text-align: center;
+      margin-top: 30px;
+      border-top: 1px solid #e4e7ed;
+      padding: 10px;
+      text-align: right;
       .btn{
         display: inline-block;
         font-size:12px;
         height: 32px;
         line-height: 32px;
         padding: 0 20px;
-        color: #999;
+        color: #666;
         background: #e6e6e6;
-        margin:0 30px;
+        margin-left: 10px;
         border-radius: 2px;
         cursor: pointer;
       }
@@ -116,13 +122,7 @@
   }
   .m_dialog.confirm{
     .dia_con_box{
-      width: 400px;
-      padding:20px 10px;
-      background: #fff;
-    }
-    .handler_box{
-      text-align: center;
-      padding: 40px 20px 20px;
+      width: 500px;
     }
   }
   .slide-enter,

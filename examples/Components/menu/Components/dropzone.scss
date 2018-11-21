@@ -1,0 +1,37 @@
+.vue-dropzone{
+	&.dropzone{
+		padding: 10px !important;
+		min-height: 100px !important;
+		.dz-preview{
+			margin: 5px !important;
+			max-width: 110px !important;
+			.dz-image {
+				height: auto !important;
+				img{width: 100%;}
+			}
+			.dz-details{
+				padding: 10px !important;
+			}
+			.dz-size{
+				margin-bottom: 0;
+				font-size: 14px;
+			}
+			.dz-remove{
+				font-size: 12px !important;
+				text-transform: none !important;
+				font-weight: normal !important;
+				padding: 5px !important;
+				letter-spacing: normal !important;
+			}
+		}
+	}
+	.dz-default{
+		margin: 1.5em 0 !important;
+		font-size: 16px !important;
+		line-height: 25px !important;
+	}
+}
+.dropzone .dz-preview .dz-success-mark svg, .dropzone .dz-preview .dz-error-mark svg{
+	width: 34px !important;
+	height: 34px !important;
+}

@@ -1,34 +1,37 @@
 <template>
   <div class="tiptap_menu_bar">
     <template v-for="(item,index) in menuBar">
-      <tip-select class="item" :name="item.name" :type="item.type" :current="currentType" @active="activeSelect" :key="index" :list="item.list" :commands="commands" :isActive="isActive" @command="itemCommand"></tip-select>
+      <tip-select class="item" :name="item.name" :type="item.type" :current="currentType" @active="activeSelect" :key="index" :list="item.list" :commands="commands" :isActive="isActive" :editor="editor" @command="itemCommand"></tip-select>
     </template>
-    <m-dialog ref="insertDialog" :title="dialogTitle" className="normal">
+    <m-dialog ref="insertDialog" :title="dialogTitle" className="normal" :confirm="true" :layoutTrigger="true" @submit="dialogSubmit">
       <div slot="content">
         <template v-if="dialogType === 'image'">
-          image
+          <image-tabs ref="imageTabs" @image="imageCommand" :attrs="selectedNode.node && selectedNode.node.attrs" :editor="editor"></image-tabs>
         </template>
       </div>
     </m-dialog>
   </div>
 </template>
 <script>
-import tipSelect from './tip.select'
-import mDialog from './dialog'
+import tipSelect from './Components/tip.select'
+import mDialog from './Components/dialog'
+import imageTabs from './Components/image.tabs'
 export default {
-  props: ['commands', 'isActive'],
+  props: ['commands', 'isActive', 'editor'],
   data () {
     return {
       currentType: '',
-      dialogTitle: 'Insert Image/Edit Image',
+      dialogTitle: 'Insert / Edit Image',
       dialogType: '',
+      imageObj: '',
+      selectedNode: {},
       menuBar: [
         {
           name: 'File',
           type: 'file',
           list: [
             {
-              name: 'print',
+              name: 'Print',
               icon: 'icon-print'
             }
           ]
@@ -38,14 +41,102 @@ export default {
           type: 'edit',
           list: [
             {
-              name: 'undo',
+              name: 'Undo',
               command: this.commands.undo,
               icon: 'icon-undo'
             },
             {
-              name: 'redo',
+              name: 'Redo',
               command: this.commands.redo,
               icon: 'icon-redo'
+            }
+          ]
+        },
+        {
+          name: 'Format',
+          type: 'format',
+          list: [
+            {
+              name: 'Bold',
+              commandCode: 'bold',
+              icon: 'icon-bold'
+            },
+            {
+              name: 'Italic',
+              commandCode: 'italic',
+              icon: 'icon-italic'
+            },
+            {
+              name: 'Strike',
+              commandCode: 'strike',
+              icon: 'icon-strike-through'
+            },
+            {
+              name: 'Underline',
+              commandCode: 'underline',
+              icon: 'icon-underline'
+            },
+            {
+              name: 'Code Inline',
+              commandCode: 'code',
+              icon: 'icon-code'
+            },
+            {
+              name: 'Block',
+              child: true,
+              list: [
+                {
+                  name: 'Code Block',
+                  commandCode: 'code_block',
+                  icon: 'icon-code-block'
+                },
+                {
+                  name: 'Blockquote',
+                  commandCode: 'blockquote',
+                  icon: 'icon-blockquote'
+                },
+                {
+                  name: 'Paragraph',
+                  commandCode: 'paragraph',
+                  icon: 'icon-paragraph'
+                }
+              ]
+            },
+            {
+              name: 'Heading',
+              child: true,
+              list: [
+                {
+                  name: 'Heading 1',
+                  attrs: { level: 1 },
+                  commandCode: 'heading'
+                },
+                {
+                  name: 'Heading 2',
+                  attrs: { level: 2 },
+                  commandCode: 'heading'
+                },
+                {
+                  name: 'Heading 3',
+                  attrs: { level: 3 },
+                  commandCode: 'heading'
+                },
+                {
+                  name: 'Heading 4',
+                  attrs: { level: 4 },
+                  commandCode: 'heading'
+                },
+                {
+                  name: 'Heading 5',
+                  attrs: { level: 5 },
+                  commandCode: 'heading'
+                },
+                {
+                  name: 'Heading 6',
+                  attrs: { level: 6 },
+                  commandCode: 'heading'
+                }
+              ]
             }
           ]
         },
@@ -55,14 +146,20 @@ export default {
           list: [
             {
               name: 'Table',
-              command: 'table',
+              commandCode: 'table',
               commandType: 'insertTable',
+              child: true,
               icon: 'icon-inserttable'
             },
             {
               name: 'Image',
-              command: 'image',
+              commandCode: 'image',
+              commandAfterClose: true,
               icon: 'icon-image'
+            },
+            {
+              name: 'Template',
+              icon: 'icon-template-copy'
             }
           ]
         },
@@ -71,14 +168,15 @@ export default {
           type: 'table',
           list: [
             {
-              name: 'insert table',
-              command: 'table',
+              name: 'Insert Table',
+              commandCode: 'table',
               commandType: 'insertTable',
+              child: true,
               icon: 'icon-inserttable'
             },
             {
-              name: 'delete table',
-              command: 'table',
+              name: 'Delete Table',
+              commandCode: 'table',
               commandType: 'deleteTable',
               icon: ''
             },
@@ -87,23 +185,23 @@ export default {
               child: true,
               list: [
                 {
-                  name: 'add row before',
-                  command: 'table',
+                  name: 'Add Row Before',
+                  commandCode: 'table',
                   commandType: 'addRowBefore'
                 },
                 {
-                  name: 'add row after',
-                  command: 'table',
+                  name: 'Add Row After',
+                  commandCode: 'table',
                   commandType: 'addRowAfter'
                 },
                 {
-                  name: 'toggle header row',
-                  command: 'table',
+                  name: 'Toggle Header Row',
+                  commandCode: 'table',
                   commandType: 'toggleHeaderRow'
                 },
                 {
-                  name: 'delete row',
-                  command: 'table',
+                  name: 'Delete Row',
+                  commandCode: 'table',
                   commandType: 'deleteRow'
                 }
               ]
@@ -113,49 +211,55 @@ export default {
               child: true,
               list: [
                 {
-                  name: 'add column before',
-                  command: 'table',
+                  name: 'Add Column Before',
+                  commandCode: 'table',
                   commandType: 'addColumnBefore'
                 },
                 {
-                  name: 'add column after',
-                  command: 'table',
+                  name: 'Add Column After',
+                  commandCode: 'table',
                   commandType: 'addColumnAfter'
                 },
                 {
-                  name: 'toggle header column',
-                  command: 'table',
+                  name: 'Toggle Header Column',
+                  commandCode: 'table',
                   commandType: 'toggleHeaderColumn'
                 },
                 {
-                  name: 'delete column',
-                  command: 'table',
+                  name: 'Delete Column',
+                  commandCode: 'table',
                   commandType: 'deleteColumn'
                 }
               ]
             },
             {
-              name: 'mergeCells',
-              command: 'table',
+              name: 'MergeCells',
+              commandCode: 'table',
               commandType: 'mergeCells',
               icon: ''
             },
             {
-              name: 'splitCell',
-              command: 'table',
+              name: 'SplitCell',
+              commandCode: 'table',
               commandType: 'splitCell',
               icon: ''
             },
             {
-              name: 'setCellBackground',
-              command: 'table',
+              name: 'SetCellBackground',
+              commandCode: 'table',
               commandType: 'setCellBackground',
               icon: ''
             },
             {
-              name: 'removeCellBackground',
-              command: 'table',
-              commandType: 'setCellBackgroundNull',
+              name: 'RemoveCellBackground',
+              commandCode: 'table',
+              commandType: 'removeCellBackground',
+              icon: ''
+            },
+            {
+              name: 'VerticalAlignMiddle',
+              commandCode: 'table',
+              commandType: 'verticalAlignMiddle',
               icon: ''
             }
           ]
@@ -165,15 +269,44 @@ export default {
   },
   components: {
     tipSelect,
-    mDialog
+    mDialog,
+    imageTabs
   },
   methods: {
     activeSelect (type) {
       this.currentType = type
     },
-    itemCommand (type) {
+    itemCommand (type, selectedNode) {
+      this.selectedNode = selectedNode || {}
       this.dialogType = type
       this.$refs.insertDialog.open()
+    },
+    imageCommand (image) {
+      this.imageObj = image
+    },
+    dialogSubmit (data) {
+      const _this = this
+      if (_this.dialogType === 'image') {
+        if (_this.imageObj) {
+          if (_this.imageObj.type === 'Upload') {
+            const filesList = _this.$refs.imageTabs.getUploadFiles()
+            if (filesList && filesList.length) {
+              filesList.forEach(item => {
+                let image = {
+                  src: item,
+                  title: '',
+                  alt: '',
+                  width: '',
+                  height: ''
+                }
+                _this.commands.image(image)
+              })
+            }
+          } else if (_this.imageObj.type === 'General') {
+            if (_this.imageObj.src) _this.commands.image(_this.imageObj)
+          }
+        }
+      }
     }
   }
 }

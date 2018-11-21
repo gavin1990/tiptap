@@ -1,10 +1,9 @@
 import { Node, Plugin } from 'tiptap'
-import { findSelectedNodeOfType } from 'prosemirror-utils'
 
-export default class Image extends Node {
+export default class Img extends Node {
 
   get name() {
-    return 'image'
+    return 'img'
   }
 
   get schema() {
@@ -18,12 +17,6 @@ export default class Image extends Node {
         title: {
           default: null,
         },
-        width: {
-          default: null,
-        },
-        height: {
-          default: null,
-        },
       },
       group: 'inline',
       draggable: true,
@@ -34,8 +27,6 @@ export default class Image extends Node {
             src: dom.getAttribute('src'),
             title: dom.getAttribute('title'),
             alt: dom.getAttribute('alt'),
-            width: dom.getAttribute('width'),
-            heigth: dom.getAttribute('heigth'),
           }),
         },
       ],
@@ -43,19 +34,12 @@ export default class Image extends Node {
     }
   }
 
-  commands({ type, schema }) {
+  commands({ type }) {
     return attrs => (state, dispatch) => {
       const { selection } = state
-      const nodeType = schema.nodes.image
-      const selectedNode = findSelectedNodeOfType(nodeType)(selection)
       const position = selection.$cursor ? selection.$cursor.pos : selection.$to.pos
-      let transaction
-      if (selectedNode && selectedNode.node) {
-        transaction = state.tr.replaceSelectionWith(nodeType.createAndFill(attrs))
-      } else {
-        const node = type.create(attrs)
-        transaction = state.tr.insert(position, node)
-      }
+      const node = type.create(attrs)
+      const transaction = state.tr.insert(position, node)
       dispatch(transaction)
     }
   }

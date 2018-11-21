@@ -100,8 +100,12 @@ export default class Table extends Node {
             setCellAttr('background', color)(state, dispatch)
             break
           }
-          case 'setCellBackgroundNull': {
+          case 'removeCellBackground': {
             setCellAttr('background', null)(state, dispatch)
+            break
+          }
+          case 'verticalAlignMiddle': {
+            setCellAttr('verticalAlign', 'middle')(state, dispatch)
             break
           }
           default: {

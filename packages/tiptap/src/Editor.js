@@ -166,7 +166,6 @@ export default class Editor {
       state: this.state,
       view: this.view,
     }))
-
     return view
   }
 
