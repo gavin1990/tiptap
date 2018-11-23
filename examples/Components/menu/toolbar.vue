@@ -56,6 +56,21 @@
 						]
 					},
 					{
+						group: 'Align',
+						list: [
+							{
+								name: 'Align Text',
+			          commandCode: 'algin',
+              	icon: 'icon-bold'
+							},
+							{
+								name: 'Italic',
+			          commandCode: 'italic',
+              	icon: 'icon-italic'
+							}
+						]
+					},
+					{
 						group: 'Block',
 						list: [
 							{

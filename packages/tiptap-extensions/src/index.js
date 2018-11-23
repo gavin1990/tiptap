@@ -24,5 +24,8 @@ export { default as Underline } from './marks/Underline'
 
 export { default as History } from './extensions/History'
 export { default as Placeholder } from './extensions/Placeholder'
+export { default as TextAlign } from './extensions/TextAlign'
+export { default as TextIndent } from './extensions/TextIndent'
+export { default as LineSpacing } from './extensions/TextLineSpacing'
 
 export { default as Suggestions } from './plugins/Suggestions'

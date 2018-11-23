@@ -257,9 +257,21 @@ export default {
               icon: ''
             },
             {
+              name: 'VerticalAlignTop',
+              commandCode: 'table',
+              commandType: 'verticalAlignTop',
+              icon: ''
+            },
+            {
               name: 'VerticalAlignMiddle',
               commandCode: 'table',
               commandType: 'verticalAlignMiddle',
+              icon: ''
+            },
+            {
+              name: 'VerticalAlignBottom',
+              commandCode: 'table',
+              commandType: 'verticalAlignBottom',
               icon: ''
             }
           ]
@@ -319,9 +331,10 @@ export default {
   border-bottom: 1px solid #ddd;
   .item {
     display: inline-block;
-    font-size: 12px;
-    height: 28px;
-    line-height: 28px;
+    font-size: 14px;
+    height: 35px;
+    line-height: 35px;
+    margin-right: 10px;
   }
 }
 </style>

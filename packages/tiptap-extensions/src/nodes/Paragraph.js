@@ -1,5 +1,5 @@
 import { setBlockType } from 'tiptap-commands'
-import Node from '../Utils/Node'
+import { Node } from 'tiptap'
 
 export const INDENT_PADDING_PX_SIZE = 30
 export const MIN_INDENT_LEVEL = 0
