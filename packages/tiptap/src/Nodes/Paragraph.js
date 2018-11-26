@@ -5,15 +5,7 @@ export const INDENT_PADDING_PX_SIZE = 30
 export const MIN_INDENT_LEVEL = 0
 export const MAX_INDENT_LEVEL = 7
 export const ATTRIBUTE_INDENT = 'data-indent'
-export const LINE_SPACING_VALUES = [
-  '100%',
-  '115%',
-  '150%', // Default value.
-  '200%',
-  '300%',
-  '400%',
-  '500%',
-]
+
 const ALIGN_PATTERN = /(left|right|center|justify)/
 
 export const clamp = (min, val, max) => {

@@ -53,12 +53,12 @@ export default class Heading extends Node {
       defining: true,
       draggable: false,
       parseDOM: [
-        {tag: 'h1', getAttrs},
-        {tag: 'h2', getAttrs},
-        {tag: 'h3', getAttrs},
-        {tag: 'h4', getAttrs},
-        {tag: 'h5', getAttrs},
-        {tag: 'h6', getAttrs},
+        { tag: 'h1', getAttrs },
+        { tag: 'h2', getAttrs },
+        { tag: 'h3', getAttrs },
+        { tag: 'h4', getAttrs },
+        { tag: 'h5', getAttrs },
+        { tag: 'h6', getAttrs },
       ],
       toDOM,
     }

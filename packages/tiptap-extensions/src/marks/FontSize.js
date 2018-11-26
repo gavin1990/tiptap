@@ -1,6 +1,12 @@
-import { Mark } from 'tiptap'
+import {
+  Mark
+} from 'tiptap'
 
-function getAttrs (fontSize) {
+import {
+  updateMark
+} from 'tiptap-commands'
+
+function getAttrs(fontSize) {
   const attrs = {}
   if (!fontSize) {
     return attrs
@@ -19,22 +25,34 @@ export default class FontSize extends Mark {
 
   get schema() {
     return {
-    	attrs: {
-		    px: {default: null},
-		  },
-		  inline: true,
-		  group: 'inline',
-		  parseDOM: [
-		    {
-		      style: 'font-size',
-		      getAttrs: getAttrs,
-		    },
-		  ],
-		  toDOM(node: Node) {
-		    const {px} = node.attrs
-		    const style = px ? `font-size: ${px}px` : ''
-		    return ['span', {style}, 0]
-		  }
+      attrs: {
+        px: {
+          default: null
+        },
+      },
+      inline: true,
+      group: 'inline',
+      parseDOM: [{
+        style: 'font-size',
+        getAttrs: getAttrs,
+      }, ],
+      toDOM(node) {
+        const {
+          px
+        } = node.attrs
+        const style = px ? `font-size: ${px}px` : ''
+        return ['span', {
+          style
+        }, 0]
+      }
+    }
+  }
+
+  commands({
+		type
+	}) {
+    return attrs =>  {
+			return updateMark(type, attrs)
     }
   }
 

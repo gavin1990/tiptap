@@ -1,17 +1,17 @@
 import { Extension } from 'tiptap'
 
-export function setTextAlign ( tr, schema, alignment) {
-  const {selection, doc} = tr
+export function setTextAlign(tr, schema, alignment) {
+  const { selection, doc } = tr
   if (!selection || !doc) {
     return tr
   }
-  const {from, to, empty} = selection
-  const {nodes} = schema
+  const { from, to } = selection
+  const { nodes } = schema
 
-  const blockquote = nodes['blockquote']
-  const listItem = nodes['list_item']
-  const heading = nodes['heading']
-  const paragraph = nodes['paragraph']
+  const blockquote = nodes.blockquote
+  const listItem = nodes.list_item
+  const heading = nodes.heading
+  const paragraph = nodes.paragraph
 
   const tasks = []
   alignment = alignment || null
@@ -41,7 +41,7 @@ export function setTextAlign ( tr, schema, alignment) {
   }
 
   tasks.forEach(job => {
-    const {node, pos, nodeType} = job
+    const { node, pos, nodeType } = job
     let attrs = node.attrs
     if (alignment) {
       attrs = {

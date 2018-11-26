@@ -1,7 +1,7 @@
 <template>
   <div class="tiptap_menu_bar">
     <template v-for="(item,index) in menuBar">
-      <tip-select class="item" :name="item.name" :type="item.type" :current="currentType" @active="activeSelect" :key="index" :list="item.list" :commands="commands" :isActive="isActive" :editor="editor" @command="itemCommand"></tip-select>
+      <tip-select class="item" :options="item || {}" :current="currentType" @active="activeSelect" :key="index" :commands="commands" :isActive="isActive" :editor="editor" @command="itemCommand"></tip-select>
     </template>
     <m-dialog ref="insertDialog" :title="dialogTitle" className="normal" :confirm="true" :layoutTrigger="true" @submit="dialogSubmit">
       <div slot="content">

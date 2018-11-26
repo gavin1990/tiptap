@@ -1,18 +1,21 @@
 <template>
   <div class="like_sel" v-if="itemShow">
-    <span class="sel_box inp_box" @click="activeClass">
-      <template v-if="name">
-        {{name}}
+    <span class="sel_box inp_box" :class="{select: !!options.select}" @click="activeClass">
+      <template v-if="options.select">
+        {{selectAttrs}}{{options.selectExtend}}
+      </template>
+      <template v-else-if="options.name">
+        {{options.name}}
       </template>
       <template v-else>
         <slot name="name"></slot>
       </template>
-      <i class="iconfont icon-arrow-down font_midd" v-if="!arrowDownIconHide"></i>
+      <i class="iconfont icon-arrow-down font_midd" v-if="!arrowDownIconHide || options.select"></i>
     </span>
     <transition name="slide" mode="out-in">
       <div class="sel_option" :class="{arrow: arrow}" v-if="active">
         <ul class="ul_list">
-          <li class="col" v-for="(item,index) in list" :class="{child: item.child, 'is-active': item.commandCode && item.commandCode !== 'table' && isActive[item.commandCode] && isActive[item.commandCode](item.attrs)}" :key="index">
+          <li class="col" v-for="(item,index) in options.list" :class="{child: item.child, 'is-active': (item.commandCode && item.commandCode !== 'table' && isActive[item.commandCode] && isActive[item.commandCode](item.attrs)) || (item.active && selectAttrs && item.active === selectAttrs)}" :key="index">
             <template v-if="item.commandCode === 'table' && item.commandType">
               <label @click="commands.table({type: item.commandType})">
                 <em class="font_midd">
@@ -68,21 +71,38 @@
 import { findSelectedNodeOfType } from 'prosemirror-utils'
 import { domClickHandle } from '../utils'
 export default {
-  props: ['name', 'arrowDownIconHide', 'list', 'arrow', 'type', 'current', 'commands', 'isActive', 'editor'],
+  props: ['options', 'markAttrs', 'arrowDownIconHide', 'arrow', 'current', 'commands', 'isActive', 'editor'],
   data () {
     return {
       active: false,
       tableRows: 1,
       tableCols: 1,
-      selectionAttrs: ''
+      selectionAttrs: '',
+      selectMarkAttrs: this.markAttrs
     }
   },
   computed: {
     itemShow () {
-      if (['table'].includes(this.type)) {
-        return this.isActive[this.type] && this.isActive[this.type]()
+      if (['table'].includes(this.options.type)) {
+        return this.isActive[this.options.type] && this.isActive[this.options.type]()
       }
       return true
+    },
+    selectAttrs () {
+      if (this.options.type === 'heading') {
+        let select = this.options.list[0].name
+        this.options.list.forEach(item => {
+          console.log('-----', this.isActive.heading({ level: 1 }))
+          if (this.isActive[item.commandCode](item.attrs)) {
+            console.log('---sdsd---')
+          }
+        })
+        return select
+      } else {
+        if (this.selectMarkAttrs[this.options.selectAttrs]) return this.selectMarkAttrs[this.options.selectAttrs]
+        if (this.options.list[0].attrs[this.options.selectAttrs]) return this.options.list[0].attrs[this.options.selectAttrs]
+      }
+      return ''
     }
   },
   created () {
@@ -111,7 +131,7 @@ export default {
     activeClass () {
       this.active = !this.active
       if (this.active) {
-        this.$emit('active', this.type)
+        this.$emit('active', this.options.type)
       }
     },
     selectTable (row, col) {
@@ -123,13 +143,19 @@ export default {
       this.tableCols = 1
     },
     insertTable () {
-      this.commands.table({type: 'insert', options: {rows: this.tableRows, cols: this.tableCols, headerRow: false}})
+      this.commands.table({ type: 'insert', options: { rows: this.tableRows, cols: this.tableCols, headerRow: false } })
       this.initTableSel()
     }
   },
   watch: {
     current (val) {
-      if (val !== this.type) this.active = false
+      if (val !== this.options.type) this.active = false
+    },
+    markAttrs: {
+      deep: true,
+      handler (val) {
+        this.selectMarkAttrs = val
+      }
     }
   }
 }
@@ -153,9 +179,15 @@ export default {
     vertical-align: middle;
   }
   .sel_box {
+    display: inline-block;
     position: relative;
-    min-width: 120px;
+    font-size: 14px;
+    text-align: center;
+    min-width: 30px;
     cursor: pointer;
+    &.select {
+      padding: 0 5px;
+    }
   }
   .slide-enter,
   .slide-leave-to {
@@ -211,11 +243,13 @@ export default {
             display: block;
           }
         }
-        &.is-active{
+        &.is-active {
           background: #f5f5f5;
         }
         &.child {
-          label{position: relative;}
+          label {
+            position: relative;
+          }
           .child_icon {
             position: absolute;
             right: 0;
@@ -286,7 +320,7 @@ export default {
         height: 1em;
         padding: 3px 5px;
         cursor: pointer;
-        &.sel_active{
+        &.sel_active {
           background: #9df1ef;
         }
       }

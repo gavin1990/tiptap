@@ -2,9 +2,9 @@
   <div>
     <div class="editor">
       <editor-menu-bar :editor="editor">
-        <div class="menubar" slot-scope="{ commands, isActive }">
+        <div class="menubar" slot-scope="{ commands, isActive, getMarkAttrs }">
           <menu-bar :commands="commands" :is-active="isActive" :editor="editor"></menu-bar>
-          <tool-bar :commands="commands" :is-active="isActive" :editor="editor"></tool-bar>
+          <tool-bar :commands="commands" :is-active="isActive" :editor="editor" :getMarkAttrs="getMarkAttrs"></tool-bar>
         </div>
       </editor-menu-bar>
 
@@ -59,6 +59,8 @@ import {
   TextAlign,
   TextIndent,
   LineSpacing,
+  FontSize,
+  FontFamily,
 } from 'tiptap-extensions'
 
 export default {
@@ -69,7 +71,7 @@ export default {
     menuBar,
     toolBar
   },
-  data() {
+  data () {
     return {
       editor: new Editor({
         image: {
@@ -105,6 +107,8 @@ export default {
           new TextAlign(),
           new TextIndent(),
           new LineSpacing(),
+          new FontSize(),
+          new FontFamily(),
           new Image(),
           new Table(),
           new TableHeader(),
@@ -141,15 +145,15 @@ export default {
       html: 'Update content to see changes',
     }
   },
-  beforeDestroy() {
+  beforeDestroy () {
     this.editor.destroy()
   },
   methods: {
-    clearContent() {
+    clearContent () {
       this.editor.clearContent(true)
       this.editor.focus()
     },
-    setContent() {
+    setContent () {
       // you can pass a json document
       this.editor.setContent({
         type: 'doc',
@@ -174,7 +178,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~variables";
+@import '~variables';
 
 .actions {
   max-width: 30rem;
@@ -182,7 +186,6 @@ export default {
 }
 
 .export {
-
   max-width: 30rem;
   margin: 0 auto 2rem auto;
 
