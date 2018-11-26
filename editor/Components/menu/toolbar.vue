@@ -1,16 +1,29 @@
 <template>
 	<div class="toolbar_wrap">
 		<div class="item" v-for="(item, index) in toolBar" :key="index">
-			<div class="col" v-if="item.list && item.list.length" v-for="(sitem, sindex) in item.list" :title="sitem.name" :key="sindex">
-				<tip-select v-if="sitem.list && sitem.list.length" :options="sitem || {}" :mark-attrs="markAttrs" :current="currentType" @active="activeSelect" :key="sindex" :commands="commands" :isActive="isActive" :editor="editor" :arrowDownIconHide="true">
-					<label class="label" slot="name">
-						<i :class="'iconfont ' + sitem.icon"></i>
+			<div v-if="item.list && item.list.length" v-for="(sitem, sindex) in item.list" :class="'col ' + sitem.type" :title="sitem.name" :key="sindex">
+				<template v-if="item.type === 'color'">
+					<label class="label" :class="{active: (sitem.commandCode && isActive[sitem.commandCode] &&isActive[sitem.commandCode](sitem.attrs))}" @click="colorPickerHandle(sitem)">
+						<i v-if="sitem.icon" :class="'iconfont ' + sitem.icon"></i>
+						<span class="til" v-else>{{sitem.name}}</span>
 					</label>
-				</tip-select>
-				<label class="label" v-else :class="{active: (sitem.commandCode && isActive[sitem.commandCode] &&isActive[sitem.commandCode](sitem.attrs))}" @click="commandHandle(sitem)">
-					<i v-if="sitem.icon" :class="'iconfont ' + sitem.icon"></i>
-					<span class="til" v-else>{{sitem.name}}</span>
-				</label>
+					<transition name="slide" mode="out-in">
+						<div class="sel_picker" v-if="sitem.picker">
+							<color-picker :item="sitem" @picker="setColor"></color-picker>
+						</div>
+					</transition>
+				</template>
+				<template v-else>
+					<tip-select v-if="sitem.list && sitem.list.length" :options="sitem || {}" :mark-attrs="markAttrs" :current="currentType" @active="activeSelect" :key="sindex" :commands="commands" :isActive="isActive" :editor="editor" :arrowDownIconHide="true">
+						<label class="label" slot="name">
+							<i :class="'iconfont ' + sitem.icon"></i>
+						</label>
+					</tip-select>
+					<label class="label" v-else :class="{active: (sitem.commandCode && isActive[sitem.commandCode] &&isActive[sitem.commandCode](sitem.attrs))}" @click="commandHandle(sitem)">
+						<i v-if="sitem.icon" :class="'iconfont ' + sitem.icon"></i>
+						<span class="til" v-else>{{sitem.name}}</span>
+					</label>
+				</template>
 			</div>
 		</div>
 	</div>
@@ -18,6 +31,8 @@
 
 <script>
 import tipSelect from './Components/tip.select'
+import colorPicker from './Components/color.picker'
+import { domClickHandle } from './utils'
 export default {
 	props: ['commands', 'isActive', 'editor', 'getMarkAttrs'],
 	data () {
@@ -165,6 +180,28 @@ export default {
 					]
 				},
 				{
+					group: 'Color',
+					type: 'color',
+					list: [
+						{
+							name: 'Text Color',
+							type: 'text_color',
+							command: this.commands.text_color,
+							picker: false,
+							attrsName: 'color',
+							icon: 'icon-text-color'
+						},
+						{
+							name: 'Text Background Color',
+							type: 'text_background_color',
+							command: this.commands.text_background_color,
+							picker: false,
+							attrsName: 'background',
+							icon: 'icon-background-color'
+						}
+					]
+				},
+				{
 					group: 'LineSpacing',
 					list: [
 						{
@@ -249,10 +286,25 @@ export default {
 		}
 	},
 	components: {
-		tipSelect
+		tipSelect,
+		colorPicker
 	},
 	methods: {
 		commandHandle (item) {
+			if (item.command) return item.command(item.attrs)
+			if (item.commandCode) {
+				return this.commands[item.commandCode](item.attrs)
+			}
+		},
+		colorPickerHandle (item) {
+			domClickHandle(item.type, _ => {
+				item.picker = false
+			})
+			return item.picker = !item.picker
+		},
+		setColor (color, item) {
+			item.attrs = item.attrs || {}
+			item.attrs[item.attrsName] = color.hex8
 			if (item.command) return item.command(item.attrs)
 			if (item.commandCode) {
 				return this.commands[item.commandCode](item.attrs)
@@ -282,6 +334,7 @@ export default {
     }
     .col {
       display: inline-flex;
+      position: relative;
       .label {
         color: #000;
         padding: 0 10px;
@@ -303,7 +356,33 @@ export default {
           top: 20px;
         }
       }
+      .sel_picker {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 999;
+        .vc-sketch {
+          border-radius: 0;
+        }
+      }
     }
   }
+}
+.slide-enter,
+.slide-leave-to {
+  transform: translateY(-10%);
+  opacity: 0;
+}
+.slide-leave {
+  transform: translateY(0);
+  opacity: 1;
+}
+.slide-enter-active {
+  transition: all 0.3s cubic-bezier(0.83, -0.55, 0.38, 1.75);
+  transition-delay: 50ms;
+}
+.slide-leave-active {
+  transition: all 0.2s ease-in-out;
+  transition-delay: 50ms;
 }
 </style>

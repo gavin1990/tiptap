@@ -51,7 +51,7 @@ export default class FontSize extends Mark {
   commands({
 		type
 	}) {
-    return attrs =>  {
+    return attrs => {
 			return updateMark(type, attrs)
     }
   }

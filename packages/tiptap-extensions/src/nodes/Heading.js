@@ -1,5 +1,6 @@
 import { Node } from 'tiptap'
 import { setBlockType, textblockTypeInputRule, toggleBlockType } from 'tiptap-commands'
+import { findParentNode } from 'prosemirror-utils'
 import { toParagraphDOM, getParagraphNodeAttrs } from './Paragraph'
 
 const TAG_NAME_TO_LEVEL = {
@@ -65,7 +66,19 @@ export default class Heading extends Node {
   }
 
   commands({ type, schema }) {
-    return attrs => toggleBlockType(type, schema.nodes.paragraph, attrs)
+    return attrs => (state, dispatch) => {
+      const { selection } = state
+      const predicate = node => node.type === type
+      const parent = findParentNode(predicate)(selection)
+      let attr = attrs
+      if (parent && parent.node && parent.node.attrs) {
+        attr = {
+          ...parent.node.attrs,
+          level: attrs.level,
+        }
+      }
+      return toggleBlockType(type, schema.nodes.paragraph, attr)(state, dispatch)
+    }
   }
 
   keys({ type }) {

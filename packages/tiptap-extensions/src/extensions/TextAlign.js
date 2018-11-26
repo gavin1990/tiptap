@@ -73,7 +73,7 @@ export default class Align extends Extension {
 
   commands({ schema }) {
     return attrs => (state, dispatch) => {
-    	const {selection} = state
+    	const { selection } = state
     	const tr = setTextAlign(state.tr.setSelection(selection), schema, attrs.align)
     	if (tr.docChanged) {
 	      dispatch && dispatch(tr.scrollIntoView())

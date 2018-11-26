@@ -16,7 +16,7 @@
       <div class="sel_option" :class="{arrow: arrow}" v-if="active">
         <ul class="ul_list">
           <li class="col" v-for="(item,index) in options.list" :class="{child: item.child, 'is-active': (item.commandCode && item.commandCode !== 'table' && isActive[item.commandCode] && isActive[item.commandCode](item.attrs)) || (item.active && selectAttrs && item.active === selectAttrs)}" :key="index">
-            <template v-if="item.commandCode === 'table' && item.commandType">
+            <template v-if="item.commandCode === 'table' && item.commandType && item.type !== 'color'">
               <label @click="commands.table({type: item.commandType})">
                 <em class="font_midd">
                   <i v-if="item.icon" :class="'iconfont ' + item.icon"></i>
@@ -60,6 +60,9 @@
                 </ul>
               </div>
             </template>
+            <template v-if="item.type === 'color'">
+              <div class="menu_item"><color-picker :item="item" @picker="setColor"></color-picker></div>
+            </template>
           </li>
         </ul>
       </div>
@@ -70,6 +73,7 @@
 <script>
 import { findSelectedNodeOfType } from 'prosemirror-utils'
 import { domClickHandle } from '../utils'
+import colorPicker from './color.picker'
 export default {
   props: ['options', 'markAttrs', 'arrowDownIconHide', 'arrow', 'current', 'commands', 'isActive', 'editor'],
   data () {
@@ -80,6 +84,9 @@ export default {
       selectionAttrs: '',
       selectMarkAttrs: this.markAttrs
     }
+  },
+  components: {
+    colorPicker
   },
   computed: {
     itemShow () {
@@ -92,9 +99,8 @@ export default {
       if (this.options.type === 'heading') {
         let select = this.options.list[0].name
         this.options.list.forEach(item => {
-          console.log('-----', this.isActive.heading({ level: 1 }))
           if (this.isActive[item.commandCode](item.attrs)) {
-            console.log('---sdsd---')
+            select = item.name
           }
         })
         return select
@@ -112,6 +118,7 @@ export default {
   },
   methods: {
     commandHandle (item) {
+      if (item.type === 'color') return false
       if (item.command) return item.command(item.attrs)
       if (item.commandCode) {
         if (item.commandAfterClose) this.active = false
@@ -145,7 +152,21 @@ export default {
     insertTable () {
       this.commands.table({ type: 'insert', options: { rows: this.tableRows, cols: this.tableCols, headerRow: false } })
       this.initTableSel()
-    }
+    },
+    setColor (color, item) {
+			item.attrs = item.attrs || {}
+      if (item.commandType) {
+        item.attrs.type = item.commandType
+        item.attrs.options = item.attrs.options || {}
+        item.attrs.options[item.attrsName] = color.hex8
+      } else {
+        item.attrs[item.attrsName] = color.hex8
+      }
+			if (item.command) return item.command(item.attrs)
+			if (item.commandCode) {
+				return this.commands[item.commandCode](item.attrs)
+			}
+		}
   },
   watch: {
     current (val) {
@@ -267,6 +288,13 @@ export default {
           padding: 5px;
           border: 1px solid #dcdcdc;
           background: #fff;
+          .vc-sketch{
+            box-shadow: none;
+            border-radius: 0;
+          }
+          /deep/ .vc-sketch-presets{
+            white-space: normal;
+          }
         }
         .ul_list {
           padding: 0;

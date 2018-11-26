@@ -23,6 +23,8 @@ export { default as Strike } from './marks/Strike'
 export { default as Underline } from './marks/Underline'
 export { default as FontSize } from './marks/FontSize'
 export { default as FontFamily } from './marks/FontFamily'
+export { default as TextColor } from './marks/TextColor'
+export { default as TextBackgroundColor } from './marks/TextBackgroundColor'
 
 export { default as History } from './extensions/History'
 export { default as Placeholder } from './extensions/Placeholder'

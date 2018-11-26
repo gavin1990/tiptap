@@ -7,6 +7,8 @@ export default function (state, type, attrs = {}) {
   if (!Object.keys(attrs).length || !parent) {
     return !!parent
   }
-
+  if (type.name === 'heading') {
+    return parent.node && parent.node.attrs && parent.node.attrs.level === attrs.level
+  }
   return parent.node.hasMarkup(type, attrs)
 }

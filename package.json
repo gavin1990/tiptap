@@ -88,6 +88,7 @@
     "zlib": "^1.0.5"
   },
   "dependencies": {
+    "vue-color": "^2.7.0",
     "vue2-dropzone": "^3.5.2",
     "webfontloader": "^1.6.28"
   }

@@ -248,7 +248,10 @@ export default {
               name: 'SetCellBackground',
               commandCode: 'table',
               commandType: 'setCellBackground',
-              icon: ''
+              child: true,
+              picker: false,
+              attrsName: 'color',
+              type: 'color'
             },
             {
               name: 'RemoveCellBackground',

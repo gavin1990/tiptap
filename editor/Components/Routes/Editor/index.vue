@@ -61,6 +61,8 @@ import {
   LineSpacing,
   FontSize,
   FontFamily,
+  TextColor,
+  TextBackgroundColor,
 } from 'tiptap-extensions'
 
 export default {
@@ -109,6 +111,8 @@ export default {
           new LineSpacing(),
           new FontSize(),
           new FontFamily(),
+          new TextColor(),
+          new TextBackgroundColor(),
           new Image(),
           new Table(),
           new TableHeader(),
