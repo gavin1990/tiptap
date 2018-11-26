@@ -63,11 +63,14 @@ export default {
 
 ## Editor Properties
 
+useBuiltInExtensions
+
 | **Property** | **Type** | **Default** | **Description** |
 | --- | :---: | :---: | --- |
 | `content` | `Object\|String` | `null` | The editor state object used by Prosemirror. You can also pass HTML to the `content` slot. When used both, the `content` slot will be ignored. |
 | `editable` | `Boolean` | `true` | When set to `false` the editor is read-only. |
 | `extensions` | `Array` | `[]` | A list of extensions used, by the editor. This can be `Nodes`, `Marks` or `Plugins`. |
+| `useBuiltInExtensions` | `Boolean` | `true` | By default tiptap adds a `Doc`, `Paragraph` and `Text` node to the Prosemirror schema. |
 | `onInit` | `Function` | `undefined` | This will return an Object with the current `state` and `view` of Prosemirror on init. |
 | `onFocus` | `Function` | `undefined` | This will return an Object with the current `state` and `view` of Prosemirror on focus. |
 | `onBlur` | `Function` | `undefined` | This will return an Object with the current `state` and `view` of Prosemirror on blur. |
@@ -90,7 +93,7 @@ The `<editor-menu-bar />` component is renderless and will receive some properti
 | --- | :---: | --- |
 | `commands` | `Array` | A list of all commands. |
 | `isActive` | `Object` | An object of functions to check if your selected text is a node or mark. `isActive.{node|mark}(attrs)` |
-| `markAttrs` | `Function` | A function to get all mark attributes of your selection. |
+| `getMarkAttrs` | `Function` | A function to get all mark attributes of your selection. |
 | `focused` | `Boolean` | Whether the editor is focused. |
 | `focus` | `Function` | A function to focus the editor. |
 
@@ -119,7 +122,7 @@ The `<editor-menu-bubble />` component is renderless and will receive some prope
 | --- | :---: | --- |
 | `commands` | `Array` | A list of all commands. |
 | `isActive` | `Object` | An object of functions to check if your selected text is a node or mark. `isActive.{node|mark}(attrs)` |
-| `markAttrs` | `Function` | A function to get all mark attributes of your selection. |
+| `getMarkAttrs` | `Function` | A function to get all mark attributes of your selection. |
 | `focused` | `Boolean` | Whether the editor is focused. |
 | `focus` | `Function` | A function to focus the editor. |
 | `menu` | `Object` | An object for positioning your menu. |
@@ -153,7 +156,7 @@ The `<editor-floating-menu />` component is renderless and will receive some pro
 | --- | :---: | --- |
 | `commands` | `Array` | A list of all commands. |
 | `isActive` | `Object` | An object of functions to check if your selected text is a node or mark. `isActive.{node|mark}(attrs)` |
-| `markAttrs` | `Function` | A function to get all mark attributes of your selection. |
+| `getMarkAttrs` | `Function` | A function to get all mark attributes of your selection. |
 | `focused` | `Boolean` | Whether the editor is focused. |
 | `focus` | `Function` | A function to focus the editor. |
 | `menu` | `Object` | An object for positioning your menu. |
@@ -300,7 +303,7 @@ Let's take a look at a real example. This is basically how the default `blockquo
 
 ```js
 import { Node } from 'tiptap'
-import { wrappingInputRule, setBlockType, wrapIn } from 'tiptap-commands'
+import { wrappingInputRule, setBlockType, toggleWrap } from 'tiptap-commands'
 
 export default class BlockquoteNode extends Node {
 
@@ -333,14 +336,14 @@ export default class BlockquoteNode extends Node {
   // `type` is the prosemirror schema object for this blockquote
   // `schema` is a collection of all registered nodes and marks
   commands({ type, schema }) {
-    return wrapIn(type)
+    return () => toggleWrap(type)
   }
 
   // here you can register some shortcuts
   // in this case you can create a blockquote with `ctrl` + `>`
   keys({ type }) {
     return {
-      'Ctrl->': wrapIn(type),
+      'Ctrl->': toggleWrap(type),
     }
   }
 
