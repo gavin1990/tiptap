@@ -61,11 +61,21 @@
     }
 
     blockquote {
-      border-left: 3px solid rgba($color-black, 0.1);
-      color: rgba($color-black, 0.8);
-      padding-left: 0.8rem;
+      // border-left: 3px solid rgba($color-black, 0.1);
+      // color: rgba($color-black, 0.8);
+      // padding-left: 0.8rem;
+      // font-style: italic;
+      background-color: rgba(0,0,0,0.05);
+      border-left: 8px solid rgba(0,0,0,.6);
+      border-radius: 1px;
+      color: #555;
+      font-family: 'Open Sans';
+      font-size: 1.4em;
       font-style: italic;
-
+      line-height: 1.6;
+      margin: 50px auto;
+      padding: 1.2em 10% 1.2em 10%;
+      position: relative;
       p {
         margin: 0;
       }

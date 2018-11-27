@@ -76,6 +76,16 @@ export default {
               commandCode: 'underline',
               icon: 'icon-underline'
             },
+						{
+							name: 'Superscript',
+							commandCode: 'sup',
+							icon: 'icon-superscript'
+						},
+						{
+							name: 'Subscript',
+							commandCode: 'sub',
+							icon: 'icon-subscript'
+						},
             {
               name: 'Code Inline',
               commandCode: 'code',
@@ -160,6 +170,11 @@ export default {
             {
               name: 'Template',
               icon: 'icon-template-copy'
+            },
+            {
+              name: 'Horizontal Line',
+              commandCode: 'hr',
+              icon: 'icon-horizontal'
             }
           ]
         },

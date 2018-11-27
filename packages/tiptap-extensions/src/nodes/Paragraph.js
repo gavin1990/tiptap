@@ -91,10 +91,8 @@ export default class Paragraph extends Node {
     }
   }
 
-  commands({
-    type
-  }) {
-    return (attrs) => {
+  commands({ type }) {
+    return attrs => {
       return setBlockType(type, attrs)
     }
   }

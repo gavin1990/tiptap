@@ -9,7 +9,7 @@
 					</label>
 					<transition name="slide" mode="out-in">
 						<div class="sel_picker" v-if="sitem.picker">
-							<color-picker :item="sitem" @picker="setColor"></color-picker>
+							<color-picker :color="markAttrs[sitem.selectAttrs]" :item="sitem" @picker="setColor"></color-picker>
 						</div>
 					</transition>
 				</template>
@@ -26,12 +26,22 @@
 				</template>
 			</div>
 		</div>
+		<m-dialog ref="insertDialog" :title="dialogTitle" className="normal" :confirm="true" :layoutTrigger="true" @submit="dialogSubmit">
+      <div slot="content">
+        <template v-if="dialogType === 'image'">
+          <image-tabs ref="imageTabs" @image="imageCommand" :attrs="selectedNode.node && selectedNode.node.attrs" :editor="editor"></image-tabs>
+        </template>
+      </div>
+    </m-dialog>
 	</div>
 </template>
 
 <script>
+import { findSelectedNodeOfType } from 'prosemirror-utils'
 import tipSelect from './Components/tip.select'
 import colorPicker from './Components/color.picker'
+import mDialog from './Components/dialog'
+import imageTabs from './Components/image.tabs'
 import { domClickHandle } from './utils'
 export default {
 	props: ['commands', 'isActive', 'editor', 'getMarkAttrs'],
@@ -99,10 +109,16 @@ export default {
 		}])
 		return {
 			currentType: '',
+      dialogTitle: 'Insert / Edit Image',
+      dialogType: '',
+      imageObj: '',
+      selectedNode: {},
 			markAttrs: {
 				px: '',
+				name: '',
 				lineSpacing: '',
-				name: ''
+				background: '',
+				color: ''
 			},
 			toolBar: [
 				{
@@ -142,6 +158,16 @@ export default {
 							name: 'Underline',
 							commandCode: 'underline',
 							icon: 'icon-underline'
+						},
+						{
+							name: 'Superscript',
+							commandCode: 'sup',
+							icon: 'icon-superscript'
+						},
+						{
+							name: 'Subscript',
+							commandCode: 'sub',
+							icon: 'icon-subscript'
 						}
 					]
 				},
@@ -189,6 +215,7 @@ export default {
 							command: this.commands.text_color,
 							picker: false,
 							attrsName: 'color',
+							selectAttrs: 'color',
 							icon: 'icon-text-color'
 						},
 						{
@@ -197,10 +224,32 @@ export default {
 							command: this.commands.text_background_color,
 							picker: false,
 							attrsName: 'background',
+							selectAttrs: 'background',
 							icon: 'icon-background-color'
 						}
 					]
 				},
+        {
+          group: 'Insert',
+          list: [
+            {
+              name: 'Image',
+              commandCode: 'image',
+              commandAfterClose: true,
+              icon: 'icon-image'
+            },
+            {
+              name: 'Link',
+              commandCode: 'hr',
+              icon: 'icon-link'
+            },
+            {
+              name: 'Horizontal Line',
+              commandCode: 'hr',
+              icon: 'icon-horizontal'
+            }
+          ]
+        },
 				{
 					group: 'LineSpacing',
 					list: [
@@ -281,21 +330,48 @@ export default {
 							icon: 'icon-indent-left'
 						}
 					]
+				},
+				{
+					group: 'Format Clear',
+					list: [
+						{
+							type: 'formatClear',
+							icon: 'icon-format-clear',
+							command: this.commands.marks_clear
+						}
+					]
 				}
 			]
 		}
 	},
 	components: {
 		tipSelect,
-		colorPicker
+		colorPicker,
+		mDialog,
+		imageTabs
 	},
 	methods: {
+		imageCommand (image) {
+      this.imageObj = image
+    },
 		commandHandle (item) {
 			if (item.command) return item.command(item.attrs)
 			if (item.commandCode) {
-				return this.commands[item.commandCode](item.attrs)
+				if (item.commandCode === 'image') {
+					const selectedNode = this.getSelectionAttrs(item.commandCode)
+					this.selectedNode = selectedNode || {}
+					this.dialogType = 'image'
+					this.$refs.insertDialog.open()
+				} else {
+					return this.commands[item.commandCode](item.attrs)
+				}
 			}
 		},
+		getSelectionAttrs (type) {
+      const { selection } = this.editor.state
+      const nodeType = this.editor.schema.nodes[type]
+      return findSelectedNodeOfType(nodeType)(selection)
+    },
 		colorPickerHandle (item) {
 			domClickHandle(item.type, _ => {
 				item.picker = false
@@ -304,7 +380,7 @@ export default {
 		},
 		setColor (color, item) {
 			item.attrs = item.attrs || {}
-			item.attrs[item.attrsName] = color.hex8
+			if (color && color.hex8) item.attrs[item.attrsName] = color.hex8
 			if (item.command) return item.command(item.attrs)
 			if (item.commandCode) {
 				return this.commands[item.commandCode](item.attrs)
@@ -313,11 +389,37 @@ export default {
 		activeSelect (type) {
 			this.currentType = type
 		},
+    dialogSubmit (data) {
+      const _this = this
+      if (_this.dialogType === 'image') {
+        if (_this.imageObj) {
+          if (_this.imageObj.type === 'Upload') {
+            const filesList = _this.$refs.imageTabs.getUploadFiles()
+            if (filesList && filesList.length) {
+              filesList.forEach(item => {
+                let image = {
+                  src: item,
+                  title: '',
+                  alt: '',
+                  width: '',
+                  height: ''
+                }
+                _this.commands.image(image)
+              })
+            }
+          } else if (_this.imageObj.type === 'General') {
+            if (_this.imageObj.src) _this.commands.image(_this.imageObj)
+          }
+        }
+      }
+    }
 	},
 	watch: {
 		getMarkAttrs (val) {
 			this.markAttrs.px = val('font_size') && val('font_size').px ? val('font_size').px : ''
 			this.markAttrs.name = val('font_family') && val('font_family').name ? val('font_family').name : ''
+			this.markAttrs.color = val('text_color') && val('text_color').color ? val('text_color').color : ''
+			this.markAttrs.background = val('text_background_color') && val('text_background_color').background ? val('text_background_color').background : ''
 		}
 	}
 }

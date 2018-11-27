@@ -3,11 +3,25 @@
 </template>
 <script>
 import { Sketch } from 'vue-color'
+import Color from 'color'
 export default {
   props: ['item', 'color'],
   data () {
     return {
-      colors: this.color || '#333333'
+      colors: '#333333'
+    }
+  },
+  created () {
+    if (this.color) {
+      let s_color = {}
+      s_color.a = Color(this.color).alpha()
+      s_color.hex = Color(this.color).hex()
+      s_color.rgba = Color(this.color).object()
+      if (s_color.rgba.alpha) {
+        s_color.rgba.a = s_color.rgba.alpha
+        delete s_color.rgba.alpha
+      }
+      this.colors = s_color
     }
   },
   components: {
@@ -15,10 +29,9 @@ export default {
   },
   watch: {
     colors (val) {
-      this.$emit('picker', val, this.item)
-    },
-    color (val) {
-      if (val) this.colors = val
+      if (val && val.hex8) {
+        this.$emit('picker', val, this.item)
+      }
     }
   }
 }

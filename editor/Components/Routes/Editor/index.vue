@@ -63,6 +63,10 @@ import {
   FontFamily,
   TextColor,
   TextBackgroundColor,
+  Subscript,
+  Superscript,
+  MarksClear,
+  HorizontalLine,
 } from 'tiptap-extensions'
 
 export default {
@@ -113,11 +117,15 @@ export default {
           new FontFamily(),
           new TextColor(),
           new TextBackgroundColor(),
+          new Subscript(),
+          new Superscript(),
           new Image(),
           new Table(),
           new TableHeader(),
           new TableCell(),
           new TableRow(),
+          new MarksClear(),
+          new HorizontalLine(),
         ],
         content: `
           <h2>
