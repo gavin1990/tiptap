@@ -14,7 +14,7 @@
 					</transition>
 				</template>
 				<template v-else>
-					<tip-select v-if="sitem.list && sitem.list.length" :options="sitem || {}" :mark-attrs="markAttrs" :current="currentType" @active="activeSelect" :key="sindex" :commands="commands" :isActive="isActive" :editor="editor" :arrowDownIconHide="true">
+					<tip-select v-if="sitem.list && sitem.list.length" :options="sitem || {}" :mark-attrs="markAttrs" :current="currentType" @active="activeSelect" :key="sindex" :commands="commands" :isActive="isActive" :editor="editor" :arrowDownIconHide="true" bar="tool">
 						<label class="label" slot="name">
 							<i :class="'iconfont ' + sitem.icon"></i>
 						</label>
@@ -31,6 +31,9 @@
         <template v-if="dialogType === 'image'">
           <image-tabs ref="imageTabs" @image="imageCommand" :attrs="selectedNode.node && selectedNode.node.attrs" :editor="editor"></image-tabs>
         </template>
+				<template v-else-if="dialogType === 'link'">
+					<e-form :schema="linkSchema" v-model="linkObj" @submit="dialogSubmit"></e-form>
+				</template>
       </div>
     </m-dialog>
 	</div>
@@ -42,134 +45,47 @@ import tipSelect from './Components/tip.select'
 import colorPicker from './Components/color.picker'
 import mDialog from './Components/dialog'
 import imageTabs from './Components/image.tabs'
-import { domClickHandle } from './utils'
+import eForm from './Components/form'
+import { domClickHandle, createObjFromSchema } from './utils'
+import { FONT_PX_SIZE_COMMANDS, LINE_SPACING_COMMANDS, FONT_TYPE_COMMANDS, HEADING_LEVEL_COMMANDS, FORMAT_COMMANDS_LIST, INSERT_BAR_LIST, TEXT_COLOR_COMMAMD_LIST, TEXT_ALIGN_COMMAMD_LIST, LIST_COMMANDS, BLOCK_COMMANDS_LIST, EDIT_COMMANDS_LIST } from './config'
 export default {
-	props: ['commands', 'isActive', 'editor', 'getMarkAttrs'],
+	props: ['commands', 'isActive', 'editor', 'focused', 'getMarkAttrs'],
 	data () {
-		const FONT_PX_SIZES = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 48, 60, 72, 90]
-		const LINE_SPACING_VALUES = ['100%', '115%', '150%', '200%', '300%', '400%', '500%']
-		const HEADING_LEVEL = [1, 2, 3, 4, 5, 6]
-		const FONT_TYPE_NAMES = [
-			// SERIF
-			'Arial',
-			'Arial Black',
-			'Georgia',
-			'Tahoma',
-			'Times New Roman',
-			'Times',
-			'Verdana',
-			// MONOSPACE
-			'Courier New',
-			'Lucida Console',
-			'Monaco',
-			'monospace',
+		const linkSchema = [
+			{
+				name: 'href',
+				label: 'Link'
+			}
 		]
-		const FONT_PX_SIZE_COMMANDS = FONT_PX_SIZES.reduce((cmd, size) => {
-			cmd.push({
-				name: `${size}px`,
-				command: this.commands.font_size,
-				active: size,
-				attrs: { px: size }
-			})
-			return cmd
-		}, [])
-		const LINE_SPACING_COMMANDS = LINE_SPACING_VALUES.reduce((cmd, value) => {
-			cmd.push({
-				name: `${value}`,
-				command: this.commands.line_spacing,
-				active: value,
-				attrs: { lineSpacing: `${value}` }
-			})
-			return cmd
-		}, [{
-			name: 'Default',
-			command: this.commands.line_spacing,
-			active: '',
-			attrs: { lineSpacing: '' }
-		}])
-		const FONT_TYPE_COMMANDS = FONT_TYPE_NAMES.reduce((cmd, name) => {
-			cmd.push({
-				name: `${name}`,
-				command: this.commands.font_family,
-				active: name,
-				attrs: { name: name }
-			})
-			return cmd
-		}, [])
-		const HEADING_LEVEL_COMMANDS = HEADING_LEVEL.reduce((cmd, level) => {
-			cmd.push({
-				name: `Heading ${level}`,
-				attrs: { level: level },
-				commandCode: 'heading'
-			})
-			return cmd
-		}, [{
-			name: 'Paragraph',
-			commandCode: 'paragraph'
-		}])
+		let linkObj = createObjFromSchema(linkSchema)
 		return {
 			currentType: '',
       dialogTitle: 'Insert / Edit Image',
       dialogType: '',
       imageObj: '',
-      selectedNode: {},
+			selectedNode: {},
+			linkSchema,
+			linkObj,
 			markAttrs: {
 				px: '',
 				name: '',
 				lineSpacing: '',
 				background: '',
-				color: ''
+				color: '',
+				href: ''
 			},
 			toolBar: [
 				{
 					group: 'Edit',
-					list: [
-						{
-							name: 'Undo',
-							command: this.commands.undo,
-							icon: 'icon-undo'
-						},
-						{
-							name: 'Redo',
-							command: this.commands.redo,
-							icon: 'icon-redo'
-						}
-					]
+					list: EDIT_COMMANDS_LIST(this.commands)
 				},
+        {
+          group: 'Insert',
+          list: INSERT_BAR_LIST
+        },
 				{
 					group: 'Format',
-					list: [
-						{
-							name: 'Bold',
-							commandCode: 'bold',
-							icon: 'icon-bold'
-						},
-						{
-							name: 'Italic',
-							commandCode: 'italic',
-							icon: 'icon-italic'
-						},
-						{
-							name: 'Strike',
-							commandCode: 'strike',
-							icon: 'icon-strike-through'
-						},
-						{
-							name: 'Underline',
-							commandCode: 'underline',
-							icon: 'icon-underline'
-						},
-						{
-							name: 'Superscript',
-							commandCode: 'sup',
-							icon: 'icon-superscript'
-						},
-						{
-							name: 'Subscript',
-							commandCode: 'sub',
-							icon: 'icon-subscript'
-						}
-					]
+					list: FORMAT_COMMANDS_LIST
 				},
 				{
 					group: 'Heading',
@@ -177,7 +93,7 @@ export default {
 						{
 							type: 'heading',
 							select: true,
-							list: HEADING_LEVEL_COMMANDS
+							list: HEADING_LEVEL_COMMANDS(true)
 						}
 					]
 				},
@@ -189,7 +105,7 @@ export default {
 							select: true,
 							selectAttrs: 'px',
 							selectExtend: 'px',
-							list: FONT_PX_SIZE_COMMANDS
+							list: FONT_PX_SIZE_COMMANDS(this.commands)
 						}
 					]
 				},
@@ -201,55 +117,15 @@ export default {
 							select: true,
 							selectAttrs: 'name',
 							selectExtend: '',
-							list: FONT_TYPE_COMMANDS
+							list: FONT_TYPE_COMMANDS(this.commands)
 						}
 					]
 				},
 				{
 					group: 'Color',
 					type: 'color',
-					list: [
-						{
-							name: 'Text Color',
-							type: 'text_color',
-							command: this.commands.text_color,
-							picker: false,
-							attrsName: 'color',
-							selectAttrs: 'color',
-							icon: 'icon-text-color'
-						},
-						{
-							name: 'Text Background Color',
-							type: 'text_background_color',
-							command: this.commands.text_background_color,
-							picker: false,
-							attrsName: 'background',
-							selectAttrs: 'background',
-							icon: 'icon-background-color'
-						}
-					]
+					list: TEXT_COLOR_COMMAMD_LIST(this.commands)
 				},
-        {
-          group: 'Insert',
-          list: [
-            {
-              name: 'Image',
-              commandCode: 'image',
-              commandAfterClose: true,
-              icon: 'icon-image'
-            },
-            {
-              name: 'Link',
-              commandCode: 'hr',
-              icon: 'icon-link'
-            },
-            {
-              name: 'Horizontal Line',
-              commandCode: 'hr',
-              icon: 'icon-horizontal'
-            }
-          ]
-        },
 				{
 					group: 'LineSpacing',
 					list: [
@@ -257,79 +133,21 @@ export default {
 							type: 'lineSpacing',
 							icon: 'icon-lineheight',
 							selectAttrs: 'lineSpacing',
-							list: LINE_SPACING_COMMANDS
+							list: LINE_SPACING_COMMANDS(this.commands)
 						}
 					]
 				},
 				{
 					group: 'AlignText',
-					list: [
-						{
-							name: 'Align Left',
-							command: this.commands.align,
-							attrs: { align: 'left' },
-							icon: 'icon-alignleft'
-						},
-						{
-							name: 'Align Center',
-							command: this.commands.align,
-							attrs: { align: 'center' },
-							icon: 'icon-align-center'
-						},
-						{
-							name: 'Align Right',
-							command: this.commands.align,
-							attrs: { align: 'right' },
-							icon: 'icon-align-right'
-						}
-					]
+					list: TEXT_ALIGN_COMMAMD_LIST(this.commands)
 				},
 				{
 					group: 'Block',
-					list: [
-						{
-							name: 'Code Inline',
-							commandCode: 'code',
-							icon: 'icon-code'
-						},
-						{
-							name: 'Code Block',
-							commandCode: 'code_block',
-							icon: 'icon-code-block'
-						},
-						{
-							name: 'Blockquote',
-							commandCode: 'blockquote',
-							icon: 'icon-blockquote'
-						}
-					]
+					list: BLOCK_COMMANDS_LIST
 				},
 				{
 					group: 'List',
-					list: [
-						{
-							name: 'Bullet List',
-							commandCode: 'bullet_list',
-							icon: 'icon-bullet-list'
-						},
-						{
-							name: 'Ordered List',
-							commandCode: 'ordered_list',
-							icon: 'icon-numbered-list'
-						},
-						{
-							name: 'Increase Indent',
-							command: this.commands.indent,
-							attrs: { type: 'increase' },
-							icon: 'icon-indent-right'
-						},
-						{
-							name: 'Decrease Indent',
-							command: this.commands.indent,
-							attrs: { type: 'decrease' },
-							icon: 'icon-indent-left'
-						}
-					]
+					list: LIST_COMMANDS(this.commands)
 				},
 				{
 					group: 'Format Clear',
@@ -348,7 +166,8 @@ export default {
 		tipSelect,
 		colorPicker,
 		mDialog,
-		imageTabs
+		imageTabs,
+		eForm
 	},
 	methods: {
 		imageCommand (image) {
@@ -360,8 +179,15 @@ export default {
 				if (item.commandCode === 'image') {
 					const selectedNode = this.getSelectionAttrs(item.commandCode)
 					this.selectedNode = selectedNode || {}
+					this.dialogTitle = 'Insert / Edit Image'
 					this.dialogType = 'image'
 					this.$refs.insertDialog.open()
+				} else if (item.commandCode === 'link') {
+					if (!this.isActive.link()) {
+						this.dialogTitle = 'Insert / Edit Link'
+						this.dialogType = 'link'
+						this.$refs.insertDialog.open()
+					}
 				} else {
 					return this.commands[item.commandCode](item.attrs)
 				}
@@ -390,7 +216,8 @@ export default {
 			this.currentType = type
 		},
     dialogSubmit (data) {
-      const _this = this
+			const _this = this
+			this.$refs.insertDialog.close()
       if (_this.dialogType === 'image') {
         if (_this.imageObj) {
           if (_this.imageObj.type === 'Upload') {
@@ -411,7 +238,12 @@ export default {
             if (_this.imageObj.src) _this.commands.image(_this.imageObj)
           }
         }
-      }
+      } else if (_this.dialogType === 'link') {
+				if (_this.linkObj && _this.linkObj.href) {
+					_this.commands.link(_this.linkObj)
+					_this.linkObj = createObjFromSchema(_this.linkSchema)
+				}
+			}
     }
 	},
 	watch: {
@@ -420,6 +252,7 @@ export default {
 			this.markAttrs.name = val('font_family') && val('font_family').name ? val('font_family').name : ''
 			this.markAttrs.color = val('text_color') && val('text_color').color ? val('text_color').color : ''
 			this.markAttrs.background = val('text_background_color') && val('text_background_color').background ? val('text_background_color').background : ''
+			this.markAttrs.href = val('link') && val('link').href ? val('link').href : ''
 		}
 	}
 }
@@ -445,6 +278,9 @@ export default {
         border-radius: 3px;
         background: transparent;
         cursor: pointer;
+				.iconfont{
+					color: #444;
+				}
         &.active {
           background-color: rgba(0, 0, 0, 0.1);
         }

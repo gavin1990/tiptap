@@ -16,9 +16,23 @@
 import tipSelect from './Components/tip.select'
 import mDialog from './Components/dialog'
 import imageTabs from './Components/image.tabs'
+import { HEADING_LEVEL_COMMANDS, FORMAT_COMMANDS_LIST, TABLE_COMMANDS_LIST, BLOCK_COMMANDS_LIST, EDIT_COMMANDS_LIST } from './config'
 export default {
   props: ['commands', 'isActive', 'editor'],
   data () {
+    let FORMAT_LIST = [
+      {
+        name: 'Block',
+        child: true,
+        list: BLOCK_COMMANDS_LIST
+      },
+      {
+        name: 'Heading',
+        child: true,
+        list: HEADING_LEVEL_COMMANDS()
+      }
+    ]
+    FORMAT_LIST = FORMAT_COMMANDS_LIST.concat(FORMAT_LIST)
     return {
       currentType: '',
       dialogTitle: 'Insert / Edit Image',
@@ -39,116 +53,12 @@ export default {
         {
           name: 'Edit',
           type: 'edit',
-          list: [
-            {
-              name: 'Undo',
-              command: this.commands.undo,
-              icon: 'icon-undo'
-            },
-            {
-              name: 'Redo',
-              command: this.commands.redo,
-              icon: 'icon-redo'
-            }
-          ]
+          list: EDIT_COMMANDS_LIST(this.commands)
         },
         {
           name: 'Format',
           type: 'format',
-          list: [
-            {
-              name: 'Bold',
-              commandCode: 'bold',
-              icon: 'icon-bold'
-            },
-            {
-              name: 'Italic',
-              commandCode: 'italic',
-              icon: 'icon-italic'
-            },
-            {
-              name: 'Strike',
-              commandCode: 'strike',
-              icon: 'icon-strike-through'
-            },
-            {
-              name: 'Underline',
-              commandCode: 'underline',
-              icon: 'icon-underline'
-            },
-						{
-							name: 'Superscript',
-							commandCode: 'sup',
-							icon: 'icon-superscript'
-						},
-						{
-							name: 'Subscript',
-							commandCode: 'sub',
-							icon: 'icon-subscript'
-						},
-            {
-              name: 'Code Inline',
-              commandCode: 'code',
-              icon: 'icon-code'
-            },
-            {
-              name: 'Block',
-              child: true,
-              list: [
-                {
-                  name: 'Code Block',
-                  commandCode: 'code_block',
-                  icon: 'icon-code-block'
-                },
-                {
-                  name: 'Blockquote',
-                  commandCode: 'blockquote',
-                  icon: 'icon-blockquote'
-                },
-                {
-                  name: 'Paragraph',
-                  commandCode: 'paragraph',
-                  icon: 'icon-paragraph'
-                }
-              ]
-            },
-            {
-              name: 'Heading',
-              child: true,
-              list: [
-                {
-                  name: 'Heading 1',
-                  attrs: { level: 1 },
-                  commandCode: 'heading'
-                },
-                {
-                  name: 'Heading 2',
-                  attrs: { level: 2 },
-                  commandCode: 'heading'
-                },
-                {
-                  name: 'Heading 3',
-                  attrs: { level: 3 },
-                  commandCode: 'heading'
-                },
-                {
-                  name: 'Heading 4',
-                  attrs: { level: 4 },
-                  commandCode: 'heading'
-                },
-                {
-                  name: 'Heading 5',
-                  attrs: { level: 5 },
-                  commandCode: 'heading'
-                },
-                {
-                  name: 'Heading 6',
-                  attrs: { level: 6 },
-                  commandCode: 'heading'
-                }
-              ]
-            }
-          ]
+          list: FORMAT_LIST
         },
         {
           name: 'Insert',
@@ -181,118 +91,7 @@ export default {
         {
           name: 'Table',
           type: 'table',
-          list: [
-            {
-              name: 'Insert Table',
-              commandCode: 'table',
-              commandType: 'insertTable',
-              child: true,
-              icon: 'icon-inserttable'
-            },
-            {
-              name: 'Delete Table',
-              commandCode: 'table',
-              commandType: 'deleteTable',
-              icon: ''
-            },
-            {
-              name: 'Row',
-              child: true,
-              list: [
-                {
-                  name: 'Add Row Before',
-                  commandCode: 'table',
-                  commandType: 'addRowBefore'
-                },
-                {
-                  name: 'Add Row After',
-                  commandCode: 'table',
-                  commandType: 'addRowAfter'
-                },
-                {
-                  name: 'Toggle Header Row',
-                  commandCode: 'table',
-                  commandType: 'toggleHeaderRow'
-                },
-                {
-                  name: 'Delete Row',
-                  commandCode: 'table',
-                  commandType: 'deleteRow'
-                }
-              ]
-            },
-            {
-              name: 'Col',
-              child: true,
-              list: [
-                {
-                  name: 'Add Column Before',
-                  commandCode: 'table',
-                  commandType: 'addColumnBefore'
-                },
-                {
-                  name: 'Add Column After',
-                  commandCode: 'table',
-                  commandType: 'addColumnAfter'
-                },
-                {
-                  name: 'Toggle Header Column',
-                  commandCode: 'table',
-                  commandType: 'toggleHeaderColumn'
-                },
-                {
-                  name: 'Delete Column',
-                  commandCode: 'table',
-                  commandType: 'deleteColumn'
-                }
-              ]
-            },
-            {
-              name: 'MergeCells',
-              commandCode: 'table',
-              commandType: 'mergeCells',
-              icon: ''
-            },
-            {
-              name: 'SplitCell',
-              commandCode: 'table',
-              commandType: 'splitCell',
-              icon: ''
-            },
-            {
-              name: 'SetCellBackground',
-              commandCode: 'table',
-              commandType: 'setCellBackground',
-              child: true,
-              picker: false,
-              attrsName: 'color',
-              type: 'color'
-            },
-            {
-              name: 'RemoveCellBackground',
-              commandCode: 'table',
-              commandType: 'removeCellBackground',
-              icon: ''
-            },
-            {
-              name: 'VerticalAlignTop',
-              commandCode: 'table',
-              commandType: 'verticalAlignTop',
-              icon: ''
-            },
-            {
-              name: 'VerticalAlignMiddle',
-              commandCode: 'table',
-              commandType: 'verticalAlignMiddle',
-              icon: ''
-            },
-            {
-              name: 'VerticalAlignBottom',
-              commandCode: 'table',
-              commandType: 'verticalAlignBottom',
-              icon: ''
-            }
-          ]
+          list: TABLE_COMMANDS_LIST
         }
       ]
     }

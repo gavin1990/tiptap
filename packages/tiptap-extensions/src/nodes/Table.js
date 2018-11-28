@@ -104,8 +104,8 @@ export default class Table extends Node {
             setCellAttr('background', null)(state, dispatch)
             break
           }
-          case 'verticalAlignMiddle': {
-            setCellAttr('verticalAlign', 'middle')(state, dispatch)
+          case 'verticalAlign': {
+            setCellAttr('verticalAlign', attrs.options.vertical)(state, dispatch)
             break
           }
           default: {

@@ -11,6 +11,7 @@ const FORMAT_MARK_NAMES = [
   'font_family',
   'strike',
   'bold',
+  'link',
   'text_color',
   'line_spacing',
   'underline',

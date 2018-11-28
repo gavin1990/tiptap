@@ -2,12 +2,16 @@
   <div>
     <div class="editor">
       <editor-menu-bar :editor="editor">
-        <div class="menubar" slot-scope="{ commands, isActive, getMarkAttrs }">
+        <div class="menubar" slot-scope="{ commands, focused, isActive, getMarkAttrs }">
           <menu-bar :commands="commands" :is-active="isActive" :editor="editor"></menu-bar>
-          <tool-bar :commands="commands" :is-active="isActive" :editor="editor" :getMarkAttrs="getMarkAttrs"></tool-bar>
+          <tool-bar :commands="commands" :is-active="isActive" :editor="editor" :focused="focused" :getMarkAttrs="getMarkAttrs"></tool-bar>
         </div>
       </editor-menu-bar>
-
+      <editor-menu-bubble class="menububble" :editor="editor">
+        <div slot-scope="{ commands, isActive, getMarkAttrs, menu }" class="menububble" :class="{ 'is-active': menububbleActive(isActive) }" :style="`left: ${menu.left}px; bottom: ${menu.bottom}px;`">
+          <menu-bubble :commands="commands" :is-active="isActive" :editor="editor" :getMarkAttrs="getMarkAttrs"></menu-bubble>
+        </div>
+      </editor-menu-bubble>
       <editor-content class="editor__content" :editor="editor" style="width: 800px;margin: 0 auto;" />
     </div>
     <div class="actions">
@@ -33,7 +37,8 @@
 import Icon from 'Components/Icon'
 import menuBar from 'Components/menu/menubar'
 import toolBar from 'Components/menu/toolbar'
-import { Editor, EditorContent, EditorMenuBar } from 'tiptap'
+import menuBubble from 'Components/menu/menu.bubble'
+import { Editor, EditorContent, EditorMenuBar, EditorMenuBubble } from 'tiptap'
 import {
   Blockquote,
   CodeBlock,
@@ -73,9 +78,11 @@ export default {
   components: {
     EditorContent,
     EditorMenuBar,
+    EditorMenuBubble,
     Icon,
     menuBar,
-    toolBar
+    toolBar,
+    menuBubble
   },
   data () {
     return {
@@ -161,6 +168,9 @@ export default {
     this.editor.destroy()
   },
   methods: {
+    menububbleActive (isActive) {
+      return isActive.link()
+    },
     clearContent () {
       this.editor.clearContent(true)
       this.editor.focus()

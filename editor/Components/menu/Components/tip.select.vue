@@ -5,7 +5,10 @@
         {{selectAttrs}}{{options.selectExtend}}
       </template>
       <template v-else-if="options.name">
-        {{options.name}}
+        <template v-if="bar === 'tool' && options.icon">
+          <slot name="name"></slot>
+        </template>
+        <template v-else>{{options.name}}</template>
       </template>
       <template v-else>
         <slot name="name"></slot>
@@ -15,9 +18,9 @@
     <transition name="slide" mode="out-in">
       <div class="sel_option" :class="{arrow: arrow}" v-if="active">
         <ul class="ul_list">
-          <li class="col" v-for="(item,index) in options.list" :class="{child: item.child, 'is-active': (item.commandCode && item.commandCode !== 'table' && isActive[item.commandCode] && isActive[item.commandCode](item.attrs)) || (item.active && selectAttrs && item.active === selectAttrs)}" :key="index">
+          <li class="col" v-for="(item,index) in options.list" v-if="(item.commandCode === 'table' && isActive[item.commandCode] && isActive[item.commandCode]()) || item.commandCode !== 'table' || item.commandType === 'insertTable'" :class="{child: item.child, 'is-active': (item.commandCode && item.commandCode !== 'table' && isActive[item.commandCode] && isActive[item.commandCode](item.attrs)) || (item.active && selectAttrs && item.active === selectAttrs)}" :key="index">
             <template v-if="item.commandCode === 'table' && item.commandType && item.type !== 'color'">
-              <label @click="commands.table({type: item.commandType})">
+              <label @click="commandHandle(item)">
                 <em class="font_midd">
                   <i v-if="item.icon" :class="'iconfont ' + item.icon"></i>
                 </em>
@@ -36,7 +39,7 @@
             </template>
             <!-- insert table -->
             <div v-if="item.commandType === 'insertTable'" class="menu_item table_insert">
-              <table @mouseleave="initTableSel" @click="insertTable">
+              <table @mouseleave="initTableSel" @click="commandHandle(item)">
                 <tr v-for="row in 10" :key="row">
                   <td v-for="col in 10" :key="col" ref="tableTd" @mouseover="selectTable(row, col)">
                     <a :class="{'sel_active': (row <= tableRows && col <= tableCols)}"></a>
@@ -48,20 +51,22 @@
             <template v-if="item.child && item.list && item.list.length">
               <div class="menu_item">
                 <ul class="ul_list">
-                  <template v-for="(sitem,sindex) in item.list">
+                  <template v-for="(sitem, sindex) in item.list">
                     <!-- table handle -->
                     <template v-if="sitem.commandCode === 'table' && sitem.commandType">
-                      <li class="col" @click="commands.table({type: sitem.commandType})">{{sitem.name}}</li>
+                      <li class="col" @click="commandHandle(sitem)" :key="sindex">{{sitem.name}}</li>
                     </template>
                     <template v-else>
-                      <li class="col" :class="{'is-active': sitem.commandCode && isActive[sitem.commandCode] && isActive[sitem.commandCode](sitem.attrs)}" @click="commandHandle(sitem)">{{sitem.name}}</li>
+                      <li class="col" :class="{'is-active': sitem.commandCode && isActive[sitem.commandCode] && isActive[sitem.commandCode](sitem.attrs)}" @click="commandHandle(sitem)" :key="sindex">{{sitem.name}}</li>
                     </template>
                   </template>
                 </ul>
               </div>
             </template>
             <template v-if="item.type === 'color'">
-              <div class="menu_item"><color-picker :item="item" @picker="setColor"></color-picker></div>
+              <div class="menu_item">
+                <color-picker :item="item" @picker="setColor"></color-picker>
+              </div>
             </template>
           </li>
         </ul>
@@ -75,7 +80,7 @@ import { findSelectedNodeOfType } from 'prosemirror-utils'
 import { domClickHandle } from '../utils'
 import colorPicker from './color.picker'
 export default {
-  props: ['options', 'markAttrs', 'arrowDownIconHide', 'arrow', 'current', 'commands', 'isActive', 'editor'],
+  props: ['options', 'markAttrs', 'arrowDownIconHide', 'arrow', 'current', 'commands', 'isActive', 'editor', 'bar'],
   data () {
     return {
       active: false,
@@ -125,6 +130,17 @@ export default {
         if (item.commandCode === 'image') {
           const selectedNode = this.getSelectionAttrs(item.commandCode)
           this.$emit('command', 'image', selectedNode)
+        } else if (item.commandCode === 'table') {
+          if (!item.commandType) return false
+          let attrs = { type: item.commandType }
+          attrs = item.attrs ? Object.assign(attrs, item.attrs) : attrs
+          if (item.commandType === 'insertTable') {
+            attrs = { type: 'insert', options: { rows: this.tableRows, cols: this.tableCols, headerRow: false } }
+            this.commands.table(attrs)
+            this.initTableSel()
+          } else {
+            this.commands.table(attrs)
+          }
         } else {
           return this.commands[item.commandCode](item.attrs)
         }
@@ -149,12 +165,8 @@ export default {
       this.tableRows = 1
       this.tableCols = 1
     },
-    insertTable () {
-      this.commands.table({ type: 'insert', options: { rows: this.tableRows, cols: this.tableCols, headerRow: false } })
-      this.initTableSel()
-    },
     setColor (color, item) {
-			item.attrs = item.attrs || {}
+      item.attrs = item.attrs || {}
       if (item.commandType) {
         item.attrs.type = item.commandType
         item.attrs.options = item.attrs.options || {}
@@ -162,11 +174,11 @@ export default {
       } else {
         item.attrs[item.attrsName] = color.hex8
       }
-			if (item.command) return item.command(item.attrs)
-			if (item.commandCode) {
-				return this.commands[item.commandCode](item.attrs)
-			}
-		}
+      if (item.command) return item.command(item.attrs)
+      if (item.commandCode) {
+        return this.commands[item.commandCode](item.attrs)
+      }
+    }
   },
   watch: {
     current (val) {
@@ -237,6 +249,7 @@ export default {
       border: 1px solid #dcdcdc;
       border-radius: 2px;
       background: #fff;
+      font-size: 14px;
       .col {
         min-width: 140px;
         padding: 0 10px;
@@ -256,7 +269,7 @@ export default {
         .iconfont {
           margin-right: 5px;
           font-size: 14px;
-          color: #888;
+          color: #555;
         }
         &:hover {
           background: #f5f5f5;
@@ -288,11 +301,11 @@ export default {
           padding: 5px;
           border: 1px solid #dcdcdc;
           background: #fff;
-          .vc-sketch{
+          .vc-sketch {
             box-shadow: none;
             border-radius: 0;
           }
-          /deep/ .vc-sketch-presets{
+          /deep/ .vc-sketch-presets {
             white-space: normal;
           }
         }
@@ -344,9 +357,8 @@ export default {
       position: relative;
       a {
         display: block;
-        width: 1em;
-        height: 1em;
-        padding: 3px 5px;
+        width: 14px;
+        height: 14px;
         cursor: pointer;
         &.sel_active {
           background: #9df1ef;

@@ -59,3 +59,30 @@ export const getImageSize = (url, callback) => {
   document.body.appendChild(img)
   img.src = url
 }
+
+function trim(str) {
+  return str.replace(/(^\s*)|(\s*$)/g, '')
+}
+
+export const setProp = (obj, path, value) => {
+  if (!path) {
+    return
+  }
+  var pList = path.split('.')
+  var len = pList.length
+  for (var i = 0; i < len - 1; i++) {
+    var elem = pList[i]
+    if (!obj[elem]) obj[elem] = {}
+    obj = obj[elem]
+  }
+  obj[pList[len - 1]] = (typeof value === 'string') ? trim(value) : value
+}
+
+export const createObjFromSchema = schema => {
+  let obj = {}
+  let self = this
+  for (let field of schema) {
+    setProp(obj, field.name, '')
+  }
+  return obj
+}
