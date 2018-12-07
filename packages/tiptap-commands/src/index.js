@@ -40,6 +40,7 @@ import {
 
 import insertText from './commands/insertText'
 import markInputRule from './commands/markInputRule'
+import pasteRule from './commands/pasteRule'
 import removeMark from './commands/removeMark'
 import replaceText from './commands/replaceText'
 import setInlineBlockType from './commands/setInlineBlockType'
@@ -90,6 +91,7 @@ export {
   // custom
   insertText,
   markInputRule,
+  pasteRule,
   removeMark,
   replaceText,
   setInlineBlockType,
